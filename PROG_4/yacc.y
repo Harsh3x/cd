@@ -12,19 +12,21 @@ struct node {
 
 int idx = -1;
 
+/* temp generator */
 str newTemp() {
     static int i = 0;
-    str t = malloc(5);
+    str t = malloc(10);
     sprintf(t, "t%d", i++);
     return t;
 }
+
 
 str add(str op1, str op2, char op) {
     idx++;
 
     if(op == '=') {
         code[idx].op1 = op2;
-        code[idx].op2 = "-";
+        code[idx].op2 = NULL;
         code[idx].op = '=';
         code[idx].res = op1;
         return op1;
@@ -40,41 +42,49 @@ str add(str op1, str op2, char op) {
     return temp;
 }
 
+
+/* TAC */
 void print_TAC() {
     printf("\nThree Address Code:\n");
-    for(int i=0;i<=idx;i++)
-        printf("%s = %s %c %s\n",
-            code[i].res,
-            code[i].op1,
-            code[i].op,
-            code[i].op2);
+    for(int i=0;i<=idx;i++) {
+        if(code[i].op == '=')
+            printf("%s = %s\n", code[i].res, code[i].op1);
+        else
+            printf("%s = %s %c %s\n",
+                code[i].res,
+                code[i].op1,
+                code[i].op,
+                code[i].op2);
+    }
 }
 
+/* Quadruples */
 void print_quad() {
     printf("\nQuadruples:\n");
     printf("i\top\targ1\targ2\tres\n");
-    for(int i=0;i<=idx;i++)
+    for(int i=0;i<=idx;i++) {
         printf("%d\t%c\t%s\t%s\t%s\n",
             i,
             code[i].op,
-            code[i].op1,
-            code[i].op2,
+            code[i].op1 ? code[i].op1 : "-",
+            code[i].op2 ? code[i].op2 : "-",
             code[i].res);
+    }
 }
 
-void print_triple() {
-    printf("\nTriples:\n");
-    printf("i\top\targ1\targ2\n");
-    for(int i=0;i<=idx;i++)
-        printf("%d\t%c\t%s\t%s\n",
-            i,
-            code[i].op,
-            code[i].op1,
-            code[i].op2);
-}
+void print_triple() { 
+    printf("\nTriples:\n"); 
+    printf("i\top\targ1\targ2\n"); 
+    for(int i=0;i<=idx;i++) 
+    printf("%d\t%c\t%s\t%s\n", i, code[i].op, code[i].op1, code[i].op2? code[i].op2:"-"); 
+    }
 
 int yylex();
-int yyerror() { printf("Error\n"); return 0; }
+
+int yyerror() {
+    //printf("Error\n");
+    return 0;
+}
 %}
 
 %union {
@@ -84,6 +94,7 @@ int yyerror() { printf("Error\n"); return 0; }
 %token <str> ID NUM
 %type <str> E
 
+%right '='
 %left '+' '-'
 %left '*' '/'
 
@@ -106,9 +117,12 @@ E : E '+' E { $$ = add($1,$3,'+'); }
 %%
 
 int main() {
+    printf("Enter expression (end with newline):\n");
     yyparse();
+
     print_TAC();
     print_quad();
     print_triple();
+
     return 0;
 }

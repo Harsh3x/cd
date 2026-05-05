@@ -4,23 +4,14 @@
 %}
 
 %%
+[a-zA-Z_][a-zA-Z0-9_]*   { yylval.str = strdup(yytext); return ID; }
+[0-9]+                  { yylval.str = strdup(yytext); return NUM; }
 
-[a-zA-Z_][a-zA-Z0-9_]* {
-    yylval.str = strdup(yytext);
-    return ID;
-}
+[-+*/=()]               return yytext[0];
 
-[0-9]+ {
-    yylval.str = strdup(yytext);
-    return NUM;
-}
-
-[-+*/=()] return yytext[0];
-
-\n return '\n';
-
-[ \t] ;
-
-. ;
+[\n]                    return '\n';
+[ \t]                   ;
 
 %%
+
+int yywrap() { return 1; }
